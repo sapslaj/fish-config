@@ -32,6 +32,7 @@ set -g tide_right_prompt_items \
   crystal \
   elixir \
   zig
+fish_config theme choose 'Catppuccin Mocha'
 
 # Secrets
 source "$HOME/.secrets"
