@@ -1,37 +1,5 @@
 # Fish customizations
 set -g fish_greeting
-set -g tide_cmd_duration_threshold 500
-set -g tide_pwd_icon_unwritable
-set -g tide_pwd_icon_home
-set -g tide_pwd_icon
-set -g tide_left_prompt_items \
-  pwd \
-  git \
-  status \
-  cmd_duration \
-  newline \
-  character
-set -g tide_right_prompt_items \
-  jobs \
-  direnv \
-  node \
-  python \
-  rustc \
-  java \
-  php \
-  pulumi \
-  ruby \
-  go \
-  gcloud \
-  kubectl \
-  distrobox \
-  toolbox \
-  terraform \
-  aws \
-  nix_shell \
-  crystal \
-  elixir \
-  zig
 fish_config theme choose 'Catppuccin Mocha'
 
 # Secrets
@@ -61,7 +29,9 @@ set -gx GIT_EDITOR "$EDITOR"
 set -gx BROWSER none
 set -gx JSII_SILENCE_WARNING_UNTESTED_NODE_VERSION true
 
-set -gp PATH -p "$HOME/.local/bin"
+if not contains "$HOME/.local/bin" $PATH
+  set -gp PATH -p "$HOME/.local/bin"
+end
 
 # abbreviations/aliases
 command -q gsed && abbr -a sed gsed
@@ -202,12 +172,14 @@ command -q direnv && direnv hook fish | source
 command -q zoxide && zoxide init fish | source
 command -q mise && mise activate fish | source
 
-if test -d "$HOME/.bun/bin"
-  set -p PATH -p "$HOME/.bun/bin"
+if test -d "$HOME/.bun/bin"; and not contains "$HOME/.bun/bin" $PATH
+  set -gp PATH -p "$HOME/.bun/bin"
 end
 
 if command -q pyenv
   set -gx PYENV_ROOT $HOME/.pyenv
-  set -p PATH -p $PYENV_ROOT/bin
+  if not contains "$PYENV_ROOT/bin" $PATH
+    set -gp PATH -p $PYENV_ROOT/bin
+  end
   pyenv init - fish | source
 end

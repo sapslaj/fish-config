@@ -1,171 +1,126 @@
-function fish_prompt
-end # In case this file gets loaded non-interactively, e.g by conda
-status is-interactive || exit
+# Based on/inspired by Tide
+# https://github.com/IlanCosman/tide
+#
+# I'm not using Tide directly anymore for several reasons:
+#   1. Tide is fast, but not fast enough.
+#   2. Some behavior not customizable enough.
+#   3. Unmaintained, as of February 2025.
 
-_tide_remove_unusable_items
-_tide_cache_variables
-_tide_parent_dirs
-source (functions --details _tide_pwd)
+function _fish_prompt_async
+  set -f id $argv[1]
+  set -f cmd $argv[2]
+  if not contains $id "$_fish_prompt_async_ids"
+    set -g _fish_prompt_async_ids -a $id
+  end
+  set -f var "_fish_prompt_async_$(echo -n $fish_pid)_$(echo -n $id)"
 
-set -l prompt_var _tide_prompt_$fish_pid
-set -U $prompt_var # Set var here so if we erase $prompt_var, bg job won't set a uvar
+  if not set -q $var
+    set -U $var
+  end
 
-set_color normal | read -l color_normal
-status fish-path | read -l fish_path
+  if set -q "$var"_repaint
+    set -e "$var"_repaint
+  else
+    command fish -c "set $var ($cmd)" &
+    builtin disown
+    function refresh --on-variable $var
+      functions -e (status current-function)
+      set -g "$var"_repaint
+      commandline -f repaint
+    end
+  end
 
-# _tide_repaint prevents us from creating a second background job
-function _tide_refresh_prompt --on-variable $prompt_var --on-variable COLUMNS
-    set -g _tide_repaint
-    commandline -f repaint
+  eval echo (printf '$%s' $var)
 end
 
-if contains newline $_tide_left_items # two line prompt initialization
-    test "$tide_prompt_add_newline_before" = true && set -l add_newline '\n'
-
-    set_color $tide_prompt_color_frame_and_connection -b normal | read -l prompt_and_frame_color
-
-    set -l column_offset 5
-    test "$tide_left_prompt_frame_enabled" = true &&
-        set -l top_left_frame "$prompt_and_frame_color╭─" &&
-        set -l bot_left_frame "$prompt_and_frame_color╰─" &&
-        set column_offset (math $column_offset-2)
-    test "$tide_right_prompt_frame_enabled" = true &&
-        set -l top_right_frame "$prompt_and_frame_color─╮" &&
-        set -l bot_right_frame "$prompt_and_frame_color─╯" &&
-        set column_offset (math $column_offset-2)
-
-    if test "$tide_prompt_transient_enabled" = true
-        eval "
-function fish_prompt
-    _tide_status=\$status _tide_pipestatus=\$pipestatus if not set -e _tide_repaint
-        jobs -q && jobs -p | count | read -lx _tide_jobs
-        $fish_path -c \"set _tide_pipestatus \$_tide_pipestatus
-set _tide_parent_dirs \$_tide_parent_dirs
-PATH=\$(string escape \"\$PATH\") CMD_DURATION=\$CMD_DURATION fish_bind_mode=\$fish_bind_mode set $prompt_var (_tide_2_line_prompt)\" &
-        builtin disown
-
-        command kill \$_tide_last_pid 2>/dev/null
-        set -g _tide_last_pid \$last_pid
-    end
-
-    if not set -q _tide_transient
-        math \$COLUMNS-(string length -V \"\$$prompt_var[1][1]\$$prompt_var[1][3]\")+$column_offset | read -lx dist_btwn_sides
-
-        echo -n $add_newline'$top_left_frame'(string replace @PWD@ (_tide_pwd) \"\$$prompt_var[1][1]\")'$prompt_and_frame_color'
-        string repeat -Nm(math max 0, \$dist_btwn_sides-\$_tide_pwd_len) '$tide_prompt_icon_connection'
-
-        echo \"\$$prompt_var[1][3]$top_right_frame\"
-    end
-    echo -n \e\[0J\"$bot_left_frame\$$prompt_var[1][2]$color_normal \"
+function _fish_prompt_cleanup --on-event fish_exit
+  for id in $_fish_prompt_async_ids
+    set -Ue "_fish_prompt_async_$(echo -n $fish_pid)_$(echo -n $id)"
+  end
 end
 
-function fish_right_prompt
-    set -e _tide_transient || string unescape \"\$$prompt_var[1][4]$bot_right_frame$color_normal\"
-end"
+#function _fish_prompt_refresh --on-variable COLUMNS
+#  commandline -f repaint
+#end
+
+function _fish_prompt_pwd
+  set -f cols $argv[1]
+  # target width is half of the terminal
+  #set -f cols (math (tput cols) / 2)
+
+  # approximate number of directories
+  set -f dir_parts (count (string split '/' $PWD))
+
+  # reduce number of full length dir parts until it fits within the target
+  # width
+  set -f prompt_pwd_result (prompt_pwd --full-length-dirs=$dir_parts)
+  while test (string length $prompt_pwd_result) -gt $cols; and test $dir_parts -gt 1
+    set -f dir_parts (math $dir_parts - 1)
+    set -f prompt_pwd_result (prompt_pwd --full-length-dirs=$dir_parts)
+  end
+
+  echo -ns (set_color 89b4fa)
+  # set the last dir to be a little brighter than the rest
+  echo -ns (string replace -r '(.*)\/(.*)' (printf '$1/%s$2' (set_color 74c7ec)) $prompt_pwd_result)
+  echo -ns (set_color normal)
+end
+
+function _fish_prompt_cmd_duration
+  set -f last_command_status $argv[1]
+  set -f last_command_duration $argv[2]
+
+  if test $last_command_status -eq 0
+    echo -ns (set_color fab387)
+  else
+    echo -ns (set_color e64553)
+  end
+
+  if test $last_command_duration -gt 1000
+    echo -ns ' '
+    set -f hours (math -s 0 $last_command_duration / 3600000)
+    set -f minutes (math -s 0 $last_command_duration / 60000 % 60)
+    set -f seconds (math -s 0 $last_command_duration / 1000 % 60)
+
+    if test $hours -ne 0
+      printf '%sh %sm %ss' $hours $minutes $seconds
+    else if test $minutes -ne 0
+      printf '%sm %ss' $minutes $seconds
     else
-        eval "
+      printf '%ss' $seconds
+    end
+  end
+
+  if test $last_command_status -ne 0
+    echo -ns ' '
+    echo -ns '✘ ' $last_command_status
+  end
+
+  echo -ns (set_color normal)
+end
+
 function fish_prompt
-    _tide_status=\$status _tide_pipestatus=\$pipestatus if not set -e _tide_repaint
-        jobs -q && jobs -p | count | read -lx _tide_jobs
-        $fish_path -c \"set _tide_pipestatus \$_tide_pipestatus
-set _tide_parent_dirs \$_tide_parent_dirs
-PATH=\$(string escape \"\$PATH\") CMD_DURATION=\$CMD_DURATION fish_bind_mode=\$fish_bind_mode set $prompt_var (_tide_2_line_prompt)\" &
-        builtin disown
+  # capture last command metrics for later
+  set -f last_command_duration $CMD_DURATION
+  set -f last_command_status $status
 
-        command kill \$_tide_last_pid 2>/dev/null
-        set -g _tide_last_pid \$last_pid
-    end
+  set -f fish_prompt_cmd_duration (_fish_prompt_cmd_duration $last_command_status $last_command_duration)
+  set -f fish_prompt_git (_fish_prompt_async git '_fish_prompt_git')
+  set -f fish_prompt_right (_fish_prompt_async right '_fish_prompt_right')
 
-    math \$COLUMNS-(string length -V \"\$$prompt_var[1][1]\$$prompt_var[1][3]\")+$column_offset | read -lx dist_btwn_sides
+  set -f fish_prompt_pwd_padding 1
+  set -f fish_prompt_pwd (_fish_prompt_pwd (math $COLUMNS - $fish_prompt_pwd_padding - (string length -V "$fish_prompt_git$fish_prompt_cmd_duration$fish_prompt_right")))
 
-    echo -ns $add_newline'$top_left_frame'(string replace @PWD@ (_tide_pwd) \"\$$prompt_var[1][1]\")'$prompt_and_frame_color'
-    string repeat -Nm(math max 0, \$dist_btwn_sides-\$_tide_pwd_len) '$tide_prompt_icon_connection'
-    echo -ns \"\$$prompt_var[1][3]$top_right_frame\"\n\"$bot_left_frame\$$prompt_var[1][2]$color_normal \"
-end
-
-function fish_right_prompt
-    string unescape \"\$$prompt_var[1][4]$bot_right_frame$color_normal\"
-end"
-    end
-else # one line prompt initialization
-    test "$tide_prompt_add_newline_before" = true && set -l add_newline '\0'
-
-    math 5 -$tide_prompt_min_cols | read -l column_offset
-    test $column_offset -ge 0 && set column_offset "+$column_offset"
-
-    if test "$tide_prompt_transient_enabled" = true
-        eval "
-function fish_prompt
-    set -lx _tide_status \$status
-    _tide_pipestatus=\$pipestatus if not set -e _tide_repaint
-        jobs -q && jobs -p | count | read -lx _tide_jobs
-        $fish_path -c \"set _tide_pipestatus \$_tide_pipestatus
-set _tide_parent_dirs \$_tide_parent_dirs
-PATH=\$(string escape \"\$PATH\") CMD_DURATION=\$CMD_DURATION fish_bind_mode=\$fish_bind_mode set $prompt_var (_tide_1_line_prompt)\" &
-        builtin disown
-
-        command kill \$_tide_last_pid 2>/dev/null
-        set -g _tide_last_pid \$last_pid
-    end
-
-    if set -q _tide_transient
-        echo -n \e\[0J
-        add_prefix= _tide_item_character
-        echo -n '$color_normal '
-    else
-        math \$COLUMNS-(string length -V \"\$$prompt_var[1][1]\$$prompt_var[1][2]\")$column_offset | read -lx dist_btwn_sides
-        string replace @PWD@ (_tide_pwd) $add_newline \$$prompt_var[1][1]'$color_normal '
-    end
-end
-
-function fish_right_prompt
-    set -e _tide_transient || string unescape \"\$$prompt_var[1][2]$color_normal\"
-end"
-    else
-        eval "
-function fish_prompt
-    _tide_status=\$status _tide_pipestatus=\$pipestatus if not set -e _tide_repaint
-        jobs -q && jobs -p | count | read -lx _tide_jobs
-        $fish_path -c \"set _tide_pipestatus \$_tide_pipestatus
-set _tide_parent_dirs \$_tide_parent_dirs
-PATH=\$(string escape \"\$PATH\") CMD_DURATION=\$CMD_DURATION fish_bind_mode=\$fish_bind_mode set $prompt_var (_tide_1_line_prompt)\" &
-        builtin disown
-
-        command kill \$_tide_last_pid 2>/dev/null
-        set -g _tide_last_pid \$last_pid
-    end
-
-    math \$COLUMNS-(string length -V \"\$$prompt_var[1][1]\$$prompt_var[1][2]\")$column_offset | read -lx dist_btwn_sides
-    string replace @PWD@ (_tide_pwd) $add_newline \$$prompt_var[1][1]'$color_normal '
-end
-
-function fish_right_prompt
-    string unescape \"\$$prompt_var[1][2]$color_normal\"
-end"
-    end
-end
-
-eval "function _tide_on_fish_exit --on-event fish_exit
-    set -e $prompt_var
-end"
-
-if test "$tide_prompt_transient_enabled" = true
-    function _tide_enter_transient
-        # If the commandline will be executed, or is empty
-        if commandline --is-valid || test -z "$(commandline)"
-            # Pager open usually means selecting, not running
-            # Can be untrue, but it's better than the alternative
-            if not commandline --paging-mode
-                set -g _tide_transient
-                set -g _tide_repaint
-                commandline -f repaint
-            end
-        end
-        commandline -f execute
-    end
-
-    bind \r _tide_enter_transient
-    bind \n _tide_enter_transient
-    bind -M insert \r _tide_enter_transient
-    bind -M insert \n _tide_enter_transient
+  printf '\n'
+  echo -ns $fish_prompt_pwd
+  echo -ns $fish_prompt_git
+  echo -ns $fish_prompt_cmd_duration
+  echo -ns (string repeat -n (math $COLUMNS - (string length -V $fish_prompt_pwd) - (string length -V $fish_prompt_git) - (string length -V $fish_prompt_cmd_duration) - (string length -V $fish_prompt_right)) ' ')
+  echo -ns $fish_prompt_right
+  printf '\n'
+  if test $last_command_status -eq 0
+    echo -ns (set_color a6e3a1)
+  else
+    echo -ns (set_color f38ba8)
+  end
+  echo -ns '❯ ' (set_color normal)
 end
