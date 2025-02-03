@@ -55,17 +55,17 @@ function _fish_prompt_python
       python --version | string match -qr "(?<v>[\d.]+)"
     end
 
-    echo "$v"
+    echo -ns "$v"
 
-    if set -q $in_venv
+    if test -n $in_venv
       string match -qr "^.*/(?<dir>.*)/(?<base>.*)" $VIRTUAL_ENV
       if test "$dir" = virtualenvs
         string match -qr "(?<base>.*)-.*" $base
-        echo "($base)"
+        echo -ns " ($base)"
       else if contains -- "$base" virtualenv venv .venv env # avoid generic names
-        echo "($dir)"
+        echo -ns " ($dir)"
       else
-        echo "($base)"
+        echo -ns " ($base)"
       end
     end
 
@@ -116,4 +116,8 @@ function _fish_prompt_right
   _fish_prompt_java
   _fish_prompt_kubectl
   _fish_prompt_aws
+
+  # HACK: the last character seems to get cut off sometimes for unknown
+  # reasons, so just add an extra whitespace character for "padding".
+  echo -ns ' '
 end

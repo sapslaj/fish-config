@@ -28,6 +28,7 @@ set -gx EDITOR nvim
 set -gx GIT_EDITOR "$EDITOR"
 set -gx BROWSER none
 set -gx JSII_SILENCE_WARNING_UNTESTED_NODE_VERSION true
+set -gx VIRTUAL_ENV_DISABLE_PROMPT true
 
 if not contains "$HOME/.local/bin" $PATH
   set -gp PATH -p "$HOME/.local/bin"
