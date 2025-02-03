@@ -1,7 +1,7 @@
 function awsprofile
-  if count $argv >/dev/null
-    set -gx AWS_PROFILE $argv
+  if test -n "$argv[1]"
+    set -gx AWS_PROFILE $argv[1]
   else
-    set -gx AWS_PROFILE "(perl -nle '/\[profile (.+)\]/ && print "$1"' < "$HOME/.aws/config" | sort | fzf)"
+    perl -nle '/\[profile (.+)\]/ && print "$1"' < "$HOME/.aws/config" | sort | fzf | read -gx AWS_PROFILE
   end
 end
