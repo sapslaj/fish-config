@@ -1,3 +1,8 @@
+# Most of the components are based on the Tide equivalents, but less
+# over-engineered. Since these components are all rendered async, speed isn't
+# _as_ much of a concern.
+
+# This is like _tide_parent_dirs but actually grokable
 function _has_in_parent_dir
   set -f dir $PWD
   while true
@@ -105,6 +110,7 @@ function _fish_prompt_aws
 end
 
 function _fish_prompt_right
+  # these are rendered in left-to-right order
   _fish_prompt_node
   _fish_prompt_python
   _fish_prompt_java

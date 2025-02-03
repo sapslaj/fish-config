@@ -5,6 +5,43 @@
 #   1. Tide is fast, but not fast enough.
 #   2. Some behavior not customizable enough.
 #   3. Unmaintained, as of February 2025.
+#
+# In addition, my prompt is a hybrid async prompt which appears to be unique
+# among the fish and fish-compatible prompts I researched.
+#
+# Instead of rendering the entire prompt either completely synchronously or
+# asynchronously, my prompt will render some parts synchronously and some parts
+# asynchronously. Asynchronous prompt rendering has quite a lot of overhead
+# (due to e.g. fork()) and making the entire prompt render asynchronously
+# causes "flashes" where the prompt will render but then it has to catch up to
+# the current state. This is especially annoying when changing directories or
+# observing the status of the last run command.
+#
+# In order to best balance speed and prompt features, the main prompt
+# components that are expected to change between commands are rendered
+# synchronously. To keep the render time as short as possible, the rendering is
+# performed entirely with shell built-ins. This avoids the overhead with
+# subprocess spawning. Other parts of the prompt, such as the git status, dev
+# tool statuses, etc are rendered asynchronously using `_fish_prompt_async`. In
+# theory, any component can be rendered independently with
+# `_fish_prompt_async`, but for the moment I am only rendering the git status
+# and the entire right-hand prompt as two separate async renders.
+#
+# `_fish_prompt_async` works by first assigning a unique global variable per
+# $fish_pid and $id, then running the given $cmd in a non-interactive fish
+# subprocess and setting that global variable to the output of that $cmd. This
+# means that any command in $PATH or fish function is a viable async component.
+# After spawning the subprocess, `_fish_prompt_async` will return the previous
+# rendered output or empty string. Once the command finishes, an
+# `--on-variable` event handler will trigger a repaint. During the repaint, the
+# call to `_fish_prompt_async` will return the updated output.
+#
+# A hybrid async prompt is only possible by implementing the prompt in native
+# fish. Implementing the prompt in any other language introduces subprocess
+# overhead which would slow the prompt down (yes this includes Rust). There's
+# nothing preventing certain components to be implemented in Rust or another
+# language, and I'm considering doing that in the future. But the main
+# components of the prompt are going to stay in fish.
 
 function _fish_prompt_async
   set -f id $argv[1]
@@ -39,14 +76,8 @@ function _fish_prompt_cleanup --on-event fish_exit
   end
 end
 
-#function _fish_prompt_refresh --on-variable COLUMNS
-#  commandline -f repaint
-#end
-
 function _fish_prompt_pwd
   set -f cols $argv[1]
-  # target width is half of the terminal
-  #set -f cols (math (tput cols) / 2)
 
   # approximate number of directories
   set -f dir_parts (count (string split '/' $PWD))
@@ -61,6 +92,7 @@ function _fish_prompt_pwd
 
   echo -ns (set_color 89b4fa)
   # set the last dir to be a little brighter than the rest
+  # TODO: profile and perf optimize this
   echo -ns (string replace -r '(.*)\/(.*)' (printf '$1/%s$2' (set_color 74c7ec)) $prompt_pwd_result)
   echo -ns (set_color normal)
 end
@@ -114,6 +146,9 @@ function fish_prompt
   echo -ns $fish_prompt_pwd
   echo -ns $fish_prompt_git
   echo -ns $fish_prompt_cmd_duration
+  # We can't use standard `fish_right_prompt` because multiple lines are not
+  # supported, and I want the stuff to be rendered on the same line as the PWD.
+  # TODO: smarter truncation for $fish_prompt_right
   echo -ns (string repeat -n (math $COLUMNS - (string length -V $fish_prompt_pwd) - (string length -V $fish_prompt_git) - (string length -V $fish_prompt_cmd_duration) - (string length -V $fish_prompt_right)) ' ')
   echo -ns $fish_prompt_right
   printf '\n'
