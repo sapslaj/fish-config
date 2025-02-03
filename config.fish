@@ -36,6 +36,8 @@ end
 
 # abbreviations/aliases
 command -q gsed && abbr -a sed gsed
+abbr -a cp cp -r
+abbr -a rm rm -rf
 abbr -a nd nextd
 abbr -a pd prevd
 abbr -a n nvim .
