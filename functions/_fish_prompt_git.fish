@@ -67,7 +67,6 @@ function _fish_prompt_git
   echo -ns $text_color ' ['  $location
   echo -ns (set_color eba0ac) ' '$operation ' '$step/$total_steps
   echo -ns (set_color 89b4fa) ' ⇣'$behind ' ⇡'$ahead
-  echo -ns (set_color a6e3a1) ' *'$stash
   echo -ns (set_color f38ba8) ' ~'$conflicted
   echo -ns (set_color f9e2af) ' +'$staged
   echo -ns (set_color f9e2af) ' !'$dirty
