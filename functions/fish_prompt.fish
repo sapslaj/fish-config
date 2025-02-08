@@ -58,7 +58,7 @@ function _fish_prompt_async
   if set -q "$var"_repaint
     set -e "$var"_repaint
   else
-    command fish -c "set $var ($cmd)" &
+    command fish -c "set -q $var && set $var ($cmd)" &
     builtin disown
     function refresh --on-variable $var
       functions -e (status current-function)
@@ -72,7 +72,9 @@ end
 
 function _fish_prompt_cleanup --on-event fish_exit
   for id in $_fish_prompt_async_ids
-    set -Ue "_fish_prompt_async_$(echo -n $fish_pid)_$(echo -n $id)"
+    if set -q "_fish_prompt_async_$(echo -n $fish_pid)_$(echo -n $id)"
+      set -Ue "_fish_prompt_async_$(echo -n $fish_pid)_$(echo -n $id)"
+    end
   end
 end
 

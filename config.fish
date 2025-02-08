@@ -3,7 +3,7 @@ set -g fish_greeting
 fish_config theme choose 'Catppuccin Mocha'
 
 # Secrets
-source "$HOME/.secrets"
+test -f "$HOME/.secrets" && source "$HOME/.secrets"
 
 # Homebrew Configuration
 if test -d /opt/homebrew/bin
