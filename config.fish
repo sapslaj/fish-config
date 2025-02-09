@@ -70,6 +70,7 @@ abbr -a gcas git commit -v -a -s
 abbr -a gcasm git commit -v -a -s -m
 abbr -a gcb git checkout -b
 abbr -a gcn! git commit -v --no-edit --amend
+abbr -a gcl git clone
 abbr -a gco git checkout
 abbr -a gcor git checkout --recurse-submodules
 abbr -a gcount git shortlog -sn
