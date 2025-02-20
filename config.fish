@@ -180,6 +180,10 @@ if test -d "$HOME/.bun/bin"; and not contains "$HOME/.bun/bin" $PATH
   set -gp PATH -p "$HOME/.bun/bin"
 end
 
+if test -d "$HOME/.pulumi/bin"; and not contains "$HOME/.pulumi/bin" $PATH
+  set -gp PATH -p "$HOME/.pulumi/bin"
+end
+
 if command -q pyenv
   set -gx PYENV_ROOT $HOME/.pyenv
   if not contains "$PYENV_ROOT/bin" $PATH
