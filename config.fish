@@ -41,6 +41,7 @@ abbr -a rm rm -rf
 abbr -a nd nextd
 abbr -a pd prevd
 abbr -a n nvim .
+abbr -a l ls -lah
 abbr -a k kubectl
 abbr -a kctx kubectx
 abbr -a kns kubens
