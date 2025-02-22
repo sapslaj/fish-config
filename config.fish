@@ -177,6 +177,10 @@ command -q direnv && direnv hook fish | source
 command -q zoxide && zoxide init fish | source
 command -q mise && mise activate fish | source
 
+if test -d "$HOME/go/bin"; and not contains "$HOME/go/bin" $PATH
+  set -gp PATH -p "$HOME/go/bin"
+end
+
 if test -d "$HOME/.bun/bin"; and not contains "$HOME/.bun/bin" $PATH
   set -gp PATH -p "$HOME/.bun/bin"
 end
