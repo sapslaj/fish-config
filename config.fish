@@ -36,15 +36,30 @@ end
 
 # abbreviations/aliases
 command -q gsed && abbr -a sed gsed
+
 abbr -a cp cp -r
 abbr -a rm rm -rf
+
 abbr -a nd nextd
 abbr -a pd prevd
+
 abbr -a n nvim .
+
+abbr -a p pulumi
+abbr -a pup pulumi up
+abbr -a pup! pulumi up --yes
+abbr -a pupd pulumi up --diff
+abbr -a pupd! pulumi up --diff --yes
+abbr -a pp pulumi preview
+abbr -a ppd pulumi preview --diff
+abbr -a pdown pulumi destroy
+
 abbr -a l ls -lah
+
 abbr -a k kubectl
 abbr -a kctx kubectx
 abbr -a kns kubens
+
 abbr -a lg lazygit
 abbr -a gg lazygit
 abbr -a g git
