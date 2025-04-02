@@ -13,6 +13,7 @@ if test -d /opt/homebrew/bin
   set -gx HOMEBREW_NO_INSTALL_CLEANUP 1
   set -gx HOMEBREW_NO_INSTALL_UPGRADE 1
   set -gx HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK 1
+  set -gp PATH -p /opt/homebrew/sbin
   set -gp PATH -p /opt/homebrew/bin
   set -gpx LD_LIBRARY_PATH /opt/homebrew/lib
 end
