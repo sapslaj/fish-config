@@ -54,6 +54,19 @@ abbr -a pupd! pulumi up --diff --yes
 abbr -a pp pulumi preview
 abbr -a ppd pulumi preview --diff
 abbr -a pdown pulumi destroy
+abbr -a pse pulumi stack export
+abbr -a psg pulumi stack graph
+abbr -a psh pulumi stack history
+abbr -a psi pulumi stack import
+abbr -a psinit pulumi stack init
+abbr -a psn pulumi stack init
+abbr -a psls pulumi stack ls
+abbr -a pso pulumi stack output
+abbr -a psr pulumi stack rename
+abbr -a psrm pulumi stack rm
+abbr -a pss pulumi stack select
+abbr -a pst pulumi stack tag
+abbr -a psu pulumi stack unselect
 
 abbr -a l ls -lah
 
