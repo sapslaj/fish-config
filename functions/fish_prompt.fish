@@ -46,8 +46,13 @@
 function _fish_prompt_async
   set -f id $argv[1]
   set -f cmd $argv[2]
+
+  if not set -q _fish_prompt_async_ids
+    set -g _fish_prompt_async_ids
+  end
+
   if not contains $id "$_fish_prompt_async_ids"
-    set -g _fish_prompt_async_ids -a $id
+    set -ga _fish_prompt_async_ids $id
   end
   set -f var "_fish_prompt_async_$(echo -n $fish_pid)_$(echo -n $id)"
 
@@ -55,16 +60,22 @@ function _fish_prompt_async
     set -U $var
   end
 
+  if not functions -q "$var"_refresh
+    function "$var"_refresh --on-variable $var --inherit-variable var
+      functions -e (status current-function)
+      if set -q "$var"_repaint
+        return
+      end
+      set -g "$var"_repaint
+      commandline -f repaint
+    end
+  end
+
   if set -q "$var"_repaint
     set -e "$var"_repaint
   else
     command fish -c "set -q $var && set $var ($cmd)" &
     builtin disown
-    function refresh --on-variable $var
-      functions -e (status current-function)
-      set -g "$var"_repaint
-      commandline -f repaint
-    end
   end
 
   eval echo (printf '$%s' $var)
