@@ -35,6 +35,9 @@ if not contains "$HOME/.local/bin" $PATH
   set -gp PATH -p "$HOME/.local/bin"
 end
 
+# revert old ctrl-c behavior
+bind ctrl-c cancel-commandline
+
 # abbreviations/aliases
 command -q gsed && abbr -a sed gsed
 
