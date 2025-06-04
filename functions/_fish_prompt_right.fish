@@ -87,7 +87,7 @@ function _fish_prompt_java
 end
 
 function _fish_prompt_kubectl
-  if not _has_in_parent_dir Chart.yaml jsonnetfile.json helmfile.yaml
+  if not set -q FISH_PROMPT_KUBECTL_ENABLE ; and not _has_in_parent_dir Chart.yaml jsonnetfile.json helmfile.yaml
     return
   end
 
