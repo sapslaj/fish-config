@@ -162,7 +162,7 @@ function fish_prompt
   # We can't use standard `fish_right_prompt` because multiple lines are not
   # supported, and I want the stuff to be rendered on the same line as the PWD.
   # TODO: smarter truncation for $fish_prompt_right
-  echo -ns (string repeat -n (math $COLUMNS - (string length -V $fish_prompt_pwd) - (string length -V $fish_prompt_git) - (string length -V $fish_prompt_cmd_duration) - (string length -V $fish_prompt_right)) ' ')
+  echo -ns (string repeat -n (math max 1,(math $COLUMNS - (string length -V $fish_prompt_pwd) - (string length -V $fish_prompt_git) - (string length -V $fish_prompt_cmd_duration) - (string length -V $fish_prompt_right))) ' ')
   echo -ns $fish_prompt_right
   printf '\n'
   if test $last_command_status -eq 0
