@@ -74,7 +74,7 @@ function _fish_prompt_async
   if set -q "$var"_repaint
     set -e "$var"_repaint
   else
-    command fish -c "set -q $var && set $var ($cmd)" &
+    command fish --private -c "set -q $var && set $var ($cmd)" &
     builtin disown
   end
 
