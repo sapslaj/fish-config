@@ -49,33 +49,7 @@ abbr -a pd prevd
 
 abbr -a n nvim .
 
-abbr -a p pulumi
-abbr -a pup pulumi up
-abbr -a pup! pulumi up --yes
-abbr -a pupd pulumi up --diff
-abbr -a pupd! pulumi up --diff --yes
-abbr -a pp pulumi preview
-abbr -a ppd pulumi preview --diff
-abbr -a pdown pulumi destroy
-abbr -a pse pulumi stack export
-abbr -a psg pulumi stack graph
-abbr -a psh pulumi stack history
-abbr -a psi pulumi stack import
-abbr -a psinit pulumi stack init
-abbr -a psn pulumi stack init
-abbr -a psls pulumi stack ls
-abbr -a pso pulumi stack output
-abbr -a psr pulumi stack rename
-abbr -a psrm pulumi stack rm
-abbr -a pss pulumi stack select
-abbr -a pst pulumi stack tag
-abbr -a psu pulumi stack unselect
-
 abbr -a l ls -lah
-
-abbr -a k kubectl
-abbr -a kctx kubectx
-abbr -a kns kubens
 
 abbr -a lg lazygit
 abbr -a gg lazygit
@@ -170,6 +144,133 @@ abbr -a gsu git submodule update
 abbr -a gsw git switch
 abbr -a gswc git switch -c
 abbr -a gts git tag -s
+
+abbr -a k kubectl
+abbr -a kctx kubectx
+abbr -a kns kubens
+abbr -a kca kubectl --all-namespaces
+abbr -a kaf kubectl apply -f
+abbr -a keti kubectl exec -t -i
+abbr -a kcuc kubectl config use-context
+abbr -a kcsc kubectl config set-context
+abbr -a kcdc kubectl config delete-context
+abbr -a kccc kubectl config current-context
+abbr -a kcgc kubectl config get-contexts
+abbr -a kdel kubectl delete
+abbr -a kdelf kubectl delete -f
+abbr -a kge kubectl get events --sort-by=".lastTimestamp"
+abbr -a kgew kubectl get events --sort-by=".lastTimestamp" --watch
+abbr -a kgp kubectl get pods
+abbr -a kgpl kgp -l
+abbr -a kgpn kgp -n
+abbr -a kgpsl kubectl get pods --show-labels
+abbr -a kgpa kubectl get pods --all-namespaces
+abbr -a kgpw kgp --watch
+abbr -a kgpwide kgp -o wide
+abbr -a kep kubectl edit pods
+abbr -a kdp kubectl describe pods
+abbr -a kdelp kubectl delete pods
+abbr -a kgpall kubectl get pods --all-namespaces -o wide
+abbr -a kgs kubectl get svc
+abbr -a kgsa kubectl get svc --all-namespaces
+abbr -a kgsw kgs --watch
+abbr -a kgswide kgs -o wide
+abbr -a kes kubectl edit svc
+abbr -a kds kubectl describe svc
+abbr -a kdels kubectl delete svc
+abbr -a kgi kubectl get ingress
+abbr -a kgia kubectl get ingress --all-namespaces
+abbr -a kei kubectl edit ingress
+abbr -a kdi kubectl describe ingress
+abbr -a kdeli kubectl delete ingress
+abbr -a kgns kubectl get namespaces
+abbr -a kens kubectl edit namespace
+abbr -a kdns kubectl describe namespace
+abbr -a kdelns kubectl delete namespace
+abbr -a kcn kubectl config set-context --current --namespace
+abbr -a kgcm kubectl get configmaps
+abbr -a kgcma kubectl get configmaps --all-namespaces
+abbr -a kecm kubectl edit configmap
+abbr -a kdcm kubectl describe configmap
+abbr -a kdelcm kubectl delete configmap
+abbr -a kgd kubectl get deployment
+abbr -a kgda kubectl get deployment --all-namespaces
+abbr -a kgdw kgd --watch
+abbr -a kgdwide kgd -o wide
+abbr -a ked kubectl edit deployment
+abbr -a kdd kubectl describe deployment
+abbr -a kdeld kubectl delete deployment
+abbr -a ksd kubectl scale deployment
+abbr -a krsd kubectl rollout status deployment
+abbr -a kgrs kubectl get replicaset
+abbr -a kdrs kubectl describe replicaset
+abbr -a kers kubectl edit replicaset
+abbr -a krh kubectl rollout history
+abbr -a kru kubectl rollout undo
+abbr -a kgss kubectl get statefulset
+abbr -a kgssa kubectl get statefulset --all-namespaces
+abbr -a kgssw kgss --watch
+abbr -a kgsswide kgss -o wide
+abbr -a kess kubectl edit statefulset
+abbr -a kdss kubectl describe statefulset
+abbr -a kdelss kubectl delete statefulset
+abbr -a ksss kubectl scale statefulset
+abbr -a krsss kubectl rollout status statefulset
+abbr -a kga kubectl get all
+abbr -a kgaa kubectl get all --all-namespaces
+abbr -a kgno kubectl get nodes
+abbr -a kgnosl kubectl get nodes --show-labels
+abbr -a keno kubectl edit node
+abbr -a kdno kubectl describe node
+abbr -a kdelno kubectl delete node
+abbr -a kgpvc kubectl get pvc
+abbr -a kgpvca kubectl get pvc --all-namespaces
+abbr -a kgpvcw kgpvc --watch
+abbr -a kepvc kubectl edit pvc
+abbr -a kdpvc kubectl describe pvc
+abbr -a kdelpvc kubectl delete pvc
+abbr -a kdsa kubectl describe sa
+abbr -a kdelsa kubectl delete sa
+abbr -a kgds kubectl get daemonset
+abbr -a kgdsa kubectl get daemonset --all-namespaces
+abbr -a kgdsw kgds --watch
+abbr -a keds kubectl edit daemonset
+abbr -a kdds kubectl describe daemonset
+abbr -a kdelds kubectl delete daemonset
+abbr -a kgcj kubectl get cronjob
+abbr -a kecj kubectl edit cronjob
+abbr -a kdcj kubectl describe cronjob
+abbr -a kdelcj kubectl delete cronjob
+abbr -a kgj kubectl get job
+abbr -a kej kubectl edit job
+abbr -a kdj kubectl describe job
+abbr -a kdelj kubectl delete job
+
+function kres
+  kubectl set env $argv REFRESHED_AT=(date +%Y%m%d%H%M%S)
+end
+
+abbr -a p pulumi
+abbr -a pup pulumi up
+abbr -a pup! pulumi up --yes
+abbr -a pupd pulumi up --diff
+abbr -a pupd! pulumi up --diff --yes
+abbr -a pp pulumi preview
+abbr -a ppd pulumi preview --diff
+abbr -a pdown pulumi destroy
+abbr -a pse pulumi stack export
+abbr -a psg pulumi stack graph
+abbr -a psh pulumi stack history
+abbr -a psi pulumi stack import
+abbr -a psinit pulumi stack init
+abbr -a psn pulumi stack init
+abbr -a psls pulumi stack ls
+abbr -a pso pulumi stack output
+abbr -a psr pulumi stack rename
+abbr -a psrm pulumi stack rm
+abbr -a pss pulumi stack select
+abbr -a pst pulumi stack tag
+abbr -a psu pulumi stack unselect
 
 abbr -a ... ../..
 abbr -a .... ../../..
