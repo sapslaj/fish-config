@@ -123,6 +123,7 @@ abbr -a grbs git rebase --skip
 abbr -a grev git revert
 abbr -a grh git reset
 abbr -a grhh git reset --hard
+abbr -a grhu git reset --hard '@{u}'
 abbr -a grm git rm
 abbr -a grmc git rm --cached
 abbr -a grs git restore
